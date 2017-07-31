@@ -11,7 +11,7 @@ postTweet();
 setInterval(postTweet, 1000 * 60 * 60);
 function postTweet()
 {
-  var cmd = 'processing-java --sketch=C:\\Users\\Isaac\\Projects\\TwitterBot\\test_image --run';
+  var cmd = 'processing-java --sketch=%cd%\\test_image --run';
   exec(cmd, processing);
 
     function processing()
