@@ -10,7 +10,9 @@
   "author": "Isaac",
   "license": "ISC",
   "dependencies": {
-    "canvas": "^1.6.6",
-    "twit": "^2.2.9"
+    "canvas": "git://github.com/elspoono/node-canvas-heroku.git"
+  },
+  "devDependencies": {
+    "canvas": "^1.6.6"
   }
 }
