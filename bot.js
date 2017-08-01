@@ -4,9 +4,6 @@ var keys = require('./keys');
 var T = new Twit(keys);
 	
 var Canvas = require('canvas-prebuilt'), Image = Canvas.Image, canvas = new Canvas(200, 200), ctx = canvas.getContext('2d');
-//var exec = require('child_process').exec; //Remove later
-//var fs = require('fs');                   //Remove later
-//var i = 1;                                //Remove later
 
 //function enumerate_boundary_words(n, k) //Python Code********************************************************************
 //{
@@ -51,38 +48,6 @@ var tweet_num = 1;
 postTweet();
 setInterval(postTweet, 1000 * 30);
 function postTweet(){
-//{
-//<<<<<<< HEAD //Prints out random image with Processing************************************
-  /* var cmd = 'processing-java --sketch=%cd%\\test_image --run';
-  exec(cmd, processing);
-
-    function processing()
-    {
-    var filename = 'test_image/output.png';
-    var b64content = fs.readFileSync(filename, { encoding: 'base64' });
-    T.post('media/upload', { media_data: b64content }, uploaded);
-
-    function uploaded(err, data, response)
-    {
-      var id = data.media_id_string;
-
-      var tweet =
-      {
-        status: 'Tweet number ' + i,
-        media_ids: [id]
-      }
-      T.post('statuses/update', tweet, tweeted);
-    }
-
-    function tweeted(err, data, response){
-      console.log('Tweeted');
-    }
-	
-	T.post('statuses/update', { status: 'Tweet number: ' + i}, function(err, data, response){console.log("Tweeted")})
-  }
-  i++;
-  */
-    ////<<<<<<< HEAD // ************************************************************************
 
 	function boundary_word_to_path(ctx, W)
 	{
@@ -126,5 +91,4 @@ function postTweet(){
 		console.log('Tweeted');
 		}
 	tweet_num++;
-//>>>>>>> 4827e90c78d853c558ec3fd83c2922853dd3f2a8 
 }
