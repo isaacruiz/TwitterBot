@@ -3,7 +3,7 @@ var Twit = require('twit');
 var keys = require('./keys');
 var T = new Twit(keys);
 	
-var Canvas = require('canvas'), Image = Canvas.Image, canvas = new Canvas(200, 200), ctx = canvas.getContext('2d');
+var Canvas = require('canvas-prebuilt'), Image = Canvas.Image, canvas = new Canvas(200, 200), ctx = canvas.getContext('2d');
 //var exec = require('child_process').exec; //Remove later
 //var fs = require('fs');                   //Remove later
 //var i = 1;                                //Remove later
