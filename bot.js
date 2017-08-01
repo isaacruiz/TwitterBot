@@ -3,46 +3,49 @@ var Twit = require('twit');
 var keys = require('./keys');
 var T = new Twit(keys);
 	
-var Canvas = require('canvas-prebuilt'), Image = Canvas.Image, canvas = new Canvas(200, 200), ctx = canvas.getContext('2d');
+var Canvas = require('canvas'), Image = Canvas.Image, canvas = new Canvas(200, 200), ctx = canvas.getContext('2d');
 
-//function enumerate_boundary_words(n, k) //Python Code********************************************************************
-//{
-//        function neighbors(p)
-//	{
-//                return [(p[0], p[1]+1), (p[0]+1, p[1]), (p[0]-1, p[1]), (p[0], p[1]-1)]
-//	}
+/*
+function enumerate_boundary_words(n, k)
+{
+        function neighbors(p)
+	{
+                return [(p[0], p[1]+1), (p[0]+1, p[1]), (p[0]-1, p[1]), (p[0], p[1]-1)]
+	}
 
-//        function dir(p1, p2)
-//	{
-//                return (p2[0]-p1[0], p2[1]-p1[1])
-//	}
+        function dir(p1, p2)
+	{
+                return (p2[0]-p1[0], p2[1]-p1[1])
+	}
 
-//        path = [(0, 0)]
-//        function recurse()
-//	{
-//                if (len(path) > n)
-//                        return;
-//                if (len(path) == n):
-//                        if (!((0, 0) in neighbors(path[-1])))
-//                                return;
-//                        // Convert to a boundary word and yield it
-			
-//                        word = (map(lambda i: vec2dir[dir(path[i], path[i+1])], xrange(len(path)-1)) +
-//                                [vec2dir[dir(path[-1], (0, 0))]])
-//                        if is_polyomino(word) and min(path) == (0, 0):
-//                                yield word
-//                head = path[-1]
-//                for new in [(head[0], head[1]+1), (head[0]+1, head[1]), (head[0]-1, head[1]), (head[0], head[1]-1)]:
-//                        if not (new in path): # Check for self-intersection
-//                                path.append(new)
-//                                for w in recurse():
-//                                        yield w
-//                                path.pop()
-//        for w in recurse():
-//                yield w
-//	}
-//}// End Python Code********************************************************************************************************
-
+        path = [(0, 0)]
+        function recurse()
+	{
+                if (len(path) > n)
+                        return;
+                if (len(path) == n)
+				{
+                        if (!((0, 0) in neighbors(path[-1])))
+                                return;
+                        // Convert to a boundary word and yield it
+		
+                        word = (map(lambda i: vec2dir[dir(path[i], path[i+1])], xrange(len(path)-1)) +
+                                [vec2dir[dir(path[-1], (0, 0))]])
+                        if is_polyomino(word) and min(path) == (0, 0):
+                                yield word
+                }
+				head = path[-1]
+                for new in [(head[0], head[1]+1), (head[0]+1, head[1]), (head[0]-1, head[1]), (head[0], head[1]-1)]:
+                        if not (new in path): # Check for self-intersection
+                                path.append(new)
+                                for w in recurse():
+                                        yield w
+                                path.pop()
+        for w in recurse():
+                yield w
+	}
+} 
+*/
 
 var tweet_num = 1;
 postTweet();
