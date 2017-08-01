@@ -94,13 +94,13 @@ function postTweet(){
 		for (var i = 0; i < W.length; ++i)
 		{
 			if (W[i] == 'U')
-				y += 30;
+				y -= 30;
 			else if (W[i] == 'R')
 				x += 30;
 			else if (W[i] == 'L')
 				x -= 30;
 			else
-				y -= 30;
+				y += 30;
 			ctx.lineTo(x, y);
 		}			
 		ctx.stroke();
