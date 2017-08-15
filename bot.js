@@ -2,12 +2,12 @@ console.log('The bot is starting');
 var Twit = require('twit');
 var keys = require('./keys');
 var T = new Twit(keys);
-//var boundary_words = require('./boundary_words');
-var boundary_words = ["nesw", "nneessww", "nnneeessswww", "nnnneeeesssswwww","nnnnneeeeessssswwwww"]; //Test boundary words
+var boundary_words = require('./boundary_words');
+//var boundary_words = ["nesw", "nneessww", "nnneeessswww", "nnnneeeesssswwww","nnnnneeeeessssswwwww"]; //Test boundary words
 
 var tweet_num = 0;
 postTweet();
-setInterval(postTweet, 1000 * 10);
+setInterval(postTweet, 1000 * 60 * 60);
 
 function postTweet()
 {
@@ -242,9 +242,7 @@ function postTweet()
 				areaHashtag = ("#" + polyArea + "omino");
 				break;
 		}
-		console.log("this is the area hashtag " + areaHashtag);
-		console.log("this is the area: " + polyArea);
-		return (areaHashtag + " #Geometry #polyomino");
+		return (areaHashtag + " #geometry #polyomino");
 	}
 
 	function tweeted(err, data, response)
