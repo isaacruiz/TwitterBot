@@ -1,3 +1,4 @@
 *.log
 keys.js
+keys_test.js
 node_modules
