@@ -31,15 +31,15 @@ function postTweet()
 	var canvas = new Canvas(canvasWidth * unit, canvasHeight * unit);
 	var	ctx = canvas.getContext('2d');
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.fillStyle = "#FFFFFF";
+	ctx.fillStyle = 'rgba(255, 255, 255, 0.99)';
 	
 	ctx.fillRect(0,0, canvas.width, canvas.height);
 	
-	console.log("Canvas dimenstions: " + canvas.width + "x" + canvas.height);
-	console.log("Poly height: " + polyHeight + " Poly width: " + polyWidth);
-	console.log("Poly height(px): " + polyHeight * unit + " Poly width(px): " + polyWidth * unit);
-	console.log("Poly area: " + polyArea);
-	var minMarginSize = 15; //pixels
+	//console.log("Canvas dimenstions: " + canvas.width + "x" + canvas.height);
+	//console.log("Poly height: " + polyHeight + " Poly width: " + polyWidth);
+	//console.log("Poly height(px): " + polyHeight * unit + " Poly width(px): " + polyWidth * unit);
+	//console.log("Poly area: " + polyArea);
+	var minMarginSize = 25; //pixels
 	var scaleFactor;
 	
 	//Scale polyomino up to fit fixed window
@@ -52,14 +52,14 @@ function postTweet()
 	////Scale to change thickness of line in resizeable canvas setup
 	//scaleFactor = 16/ Math.max(polyWidth, polyHeight);
 	
-	console.log("scaleFactor: " + scaleFactor);
+	//console.log("scaleFactor: " + scaleFactor);
 
 	//var xInit = 1 * unit;
 	//var yInit =  (1 - polyominoData[3]) * unit;
 	xInit = (canvas.width - (polyWidth * scaleFactor * unit)) / 2
 	yInit = (canvas.height - (polyHeight * scaleFactor * unit)) / 2 - (polyominoData[3] * scaleFactor * unit);
-	console.log("X init:" + xInit);
-	console.log("Y init: " + yInit);
+	//console.log("X init:" + xInit);
+	//console.log("Y init: " + yInit);
 	boundary_word_to_path(ctx, boundary_words[tweet_num])
 	//boundary_word_to_path(ctx, "nnessw");
 	function getPolyominoData(W)
@@ -185,9 +185,10 @@ function postTweet()
 
 		var tweet =
 		{
-		status: "Polyomino Number: " + tweet_num 
-		+ "\nBoundary Word: " + boundary_words[tweet_num - 1] 
-		+ "\nBoundary Length: " + boundary_words[tweet_num - 1].length
+		status: "Fixed simple polyomino number: " + tweet_num 
+		+ "\nBoundary word: " + boundary_words[tweet_num - 1] 
+		+ "\nBoundary length: " + boundary_words[tweet_num - 1].length
+		+ "\nArea: " + polyArea 
 		+ "\n" + hashtags(polyArea),
 		media_ids: [id]
 		}
@@ -247,7 +248,7 @@ function postTweet()
 
 	function tweeted(err, data, response)
 	{
-		console.log('Tweeted');
+		//console.log('Tweeted');
 	}
 	tweet_num++;
 }
