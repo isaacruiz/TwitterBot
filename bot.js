@@ -28,7 +28,7 @@ stream.on('tweet', function(data){
 
 		tweetText = data.text
 
-		var reqBW = getBoundaryFromTweet(tweetText);
+		var reqBW = getBoundaryFromTweet(tweetText.toLowerCase());
 
 		var polyominoData = getPolyominoData(reqBW);
 		var polyWidth = polyominoData[0] - polyominoData[1];
@@ -59,7 +59,28 @@ stream.on('tweet', function(data){
 					+ "\n" + hashtags(polyArea)
 				}
 				else{
-					replyText = "@" + sender + "Not a closed path!";
+					switch(Math.floor(Math.random()*5)){
+						case 0:
+							replyText = "@" + sender + "Not a closed path!";
+							break;
+
+						case 1:
+							replyText = "@" + sender + " Have you tried checking wikipedia for what a polyomino is? https://en.wikipedia.org/wiki/Polyomino";
+							break;
+
+						case 2:
+							replyText = "@" + sender + " What's that?"
+							break;
+
+						case 3:
+							replyText = "@" + sender + " Is this really what you're looking for?"
+							break;
+
+						case 4:
+							replyText = "@" + sender + " Either I don't know how to read or you are prone to making typos"
+							break;
+					}
+
 				}
 
 				var tweet = {
