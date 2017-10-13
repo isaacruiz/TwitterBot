@@ -2,3 +2,6 @@
 keys.js
 keys_test.js
 node_modules
+*.html
+test_string_parser.js
+tweetdata.json
