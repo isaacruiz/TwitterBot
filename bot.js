@@ -11,7 +11,7 @@ var minMarginSize = 25; //pixels
 var scaleFactor;
 
 postTweet();
-//setInterval(postTweet, 1000 * 60 * 60);
+setInterval(postTweet, 1000 * 60 * 60);
 //setInterval(postTweet, 1000 * 10);
 var stream = T.stream('user');
 
@@ -28,47 +28,60 @@ stream.on('tweet', function(data){
 
 		tweetText = data.text
 
-		var requestedBW = getBoundaryFromTweet(tweetText);
+		var reqBW = getBoundaryFromTweet(tweetText);
 
-		boundWord = requestedBW;
-
-		var polyominoData = getPolyominoData(boundWord);
+		var polyominoData = getPolyominoData(reqBW);
 		var polyWidth = polyominoData[0] - polyominoData[1];
 		var polyHeight = polyominoData[2] - polyominoData[3];
 		var polyArea = polyominoData[4];
 		var isClosed = polyominoData[5];
+		var lowestXcoord = polyominoData[1];
 		var lowestYcoord = polyominoData[3];
 
 		console.log("poly width: " + polyWidth + " poly height: " + polyHeight);
 
-		canvas = renderCanvas(requestedBW, polyWidth, polyHeight, lowestYcoord);
 
-		T.post('media/upload', { media_data: canvas.toBuffer().toString('base64') }, uploaded);
+			canvas = renderCanvas(reqBW, polyWidth, polyHeight, lowestXcoord, lowestYcoord);
 
-		function uploaded(err, data, response){
-			var id = data.media_id_string;
+			T.post('media/upload', {
+				media_data: canvas.toBuffer().toString('base64') }, uploaded);
 
-			var tweet = {
-			status: "@" + sender + " Here is the polyomino you requested!"
-			+ "\nBoundary word: " + boundWord
-			+ "\nBoundary length: " + boundWord.length
-			+ "\nArea: " + polyArea
-			+ "\n" + hashtags(polyArea),
-			media_ids: [id]
+			function uploaded(err, data, response){
+
+				var id = data.media_id_string;
+				var replyText;
+				console.log("closed path? " + isClosed);
+				if(isClosed){
+					replyText = "@" + sender + " Here is the polyomino you requested!"
+					+ "\nBoundary word: " + boundWord
+					+ "\nBoundary length: " + boundWord.length
+					+ "\nArea: " + polyArea
+					+ "\n" + hashtags(polyArea)
+				}
+				else{
+					replyText = "@" + sender + "Not a closed path!";
+				}
+
+				var tweet = {
+					status: replyText,
+					media_ids: [id]
+				}
+				T.post('statuses/update', tweet, tweeted);
 			}
-			T.post('statuses/update', tweet, tweeted);
-		}
 
-		function tweeted(err, data, response){
-			console.log('Tweeted');
-		}
+			function tweeted(err, data, response){
+				console.log('Tweeted');
+			}
 
 
-		console.log("Replied to " + sender + "'s request of " + requestedBW);
+
+
+		console.log("Replied to " + sender + "'s request of " + reqBW);
 
 		//var reply = "@" + sender + " replying to your message:" + tweetText;
 		//T.post('statuses/update', {status: reply});
-	}
+		}
+
 })
 
 function getBoundaryFromTweet(text){
@@ -97,9 +110,10 @@ function postTweet()
 	var polyHeight = polyominoData[2] - polyominoData[3];
 	var polyArea = polyominoData[4];
 	var isClosed = polyominoData[5];
+	var lowestXcoord = polyominoData[1];
 	var lowestYcoord = polyominoData[3];
 
-	canvas = renderCanvas(boundWord, polyWidth, polyHeight, lowestYcoord);
+	canvas = renderCanvas(boundWord, polyWidth, polyHeight, lowestXcoord, lowestYcoord);
 
 	T.post('media/upload', { media_data: canvas.toBuffer().toString('base64') }, uploaded);
 
@@ -168,7 +182,7 @@ function getPolyominoData(W){
 	return [xMax, xMin, yMax, yMin, polyArea, closed];
 }
 
-function boundary_word_to_path(ctx, W)
+function boundary_word_to_path(ctx, W, xInit, yInit)
 {
 	function setColor()
 	{
@@ -242,7 +256,7 @@ function boundary_word_to_path(ctx, W)
 	ctx.fill();
 }
 
-function renderCanvas(bw, polyWidth, polyHeight, yMin){
+function renderCanvas(bw, polyWidth, polyHeight, xMin, yMin){
 	var canvasHeight = 5;
 	var canvasWidth =  2 * canvasHeight
 
@@ -264,9 +278,9 @@ function renderCanvas(bw, polyWidth, polyHeight, yMin){
 		scaleFactor = (canvas.width - 2 * minMarginSize)/(polyWidth * unit);
 
 	////Scale to change thickness of line in resizeable canvas setup
-	xInit = (canvas.width - (polyWidth * scaleFactor * unit)) / 2
+	xInit = (canvas.width - (polyWidth * scaleFactor * unit)) / 2 - (xMin * scaleFactor * unit);
 	yInit = (canvas.height - (polyHeight * scaleFactor * unit)) / 2 - (yMin * scaleFactor * unit);
-	boundary_word_to_path(ctx, bw)
+	boundary_word_to_path(ctx, bw, xInit, yInit)
 	return canvas;
 }
 
