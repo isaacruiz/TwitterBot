@@ -120,7 +120,7 @@ stream.on('tweet', function(data){
 					replyText = "@" + sender + " Sorry! I didn't see a boundary word in your tweet";
 				}
 				else if(isClosed && !isIntersecting && !isClockwise){
-					replyText = "@" + sender + " Typically, polyomino boundary words are read in clockwise orientation. Please try correcting and resending your request :)";
+					replyText = "@" + sender + " I like polyomino boundary words that are read in clockwise orientation. Please try correcting and resending your request :)";
 				}
 				else if(isIntersecting && isClosed){
 					if(reqBW.length < 35){
