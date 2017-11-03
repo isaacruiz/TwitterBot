@@ -1,3 +1,4 @@
+
 console.log('The bot is starting');
 var Twit = require('twit');
 var keys = require('./keys_test');
@@ -37,18 +38,37 @@ stream.on('tweet', function(data){
 
 		var reqBW = getBoundaryFromTweet(tweetText.toLowerCase());
 
-		if(collision(reqBW)){
+
+		var polyominoData = getPolyominoData(reqBW);
+		var polyWidth = polyominoData[0] - polyominoData[1];
+		var polyHeight = polyominoData[2] - polyominoData[3];
+		var polyArea = polyominoData[4];
+		var lowestXcoord = polyominoData[1];
+		var lowestYcoord = polyominoData[3];
+
+		var isClockwise = clockwise(reqBW);
+		var isIntersecting = collision(reqBW);
+		var isClosed = polyominoData[5];
+		var isValidBoundary = isClockwise && !isIntersecting && isClosed;
+		if(isIntersecting){
 			console.log("There is a collision");
 		}
 		else {
 			console.log("There was no collision");
 		}
 
-		if(clockwise(reqBW)){
+		if(isClockwise){
 			console.log("The bw is clockwise");
 		}
 		else {
 			console.log("The bw is not clockwise");
+		}
+
+		if(isClosed){
+			console.log("The bw is closed");
+		}
+		else {
+			console.log("The bw is not closed");
 		}
 
 		if(tiles(reqBW)){
@@ -58,20 +78,8 @@ stream.on('tweet', function(data){
 			console.log("It does not tile");
 		}
 
-
-		var polyominoData = getPolyominoData(reqBW);
-		var polyWidth = polyominoData[0] - polyominoData[1];
-		var polyHeight = polyominoData[2] - polyominoData[3];
-		var polyArea = polyominoData[4];
-		var isClosed = polyominoData[5];
-		var lowestXcoord = polyominoData[1];
-		var lowestYcoord = polyominoData[3];
-
 		console.log("poly width: " + polyWidth + " poly height: " + polyHeight);
-
-
 		canvas = renderCanvas(reqBW, polyWidth, polyHeight, lowestXcoord, lowestYcoord);
-
 		T.post('media/upload', {media_data: canvas.toBuffer().toString('base64')}, uploaded);
 
 		function uploaded(err, data, response){
@@ -82,19 +90,44 @@ stream.on('tweet', function(data){
 			else{
 				var id = data.media_id_string;
 				var replyText;
-				console.log("closed path? " + isClosed);
-				if(isClosed){
-					replyText = "@" + sender + " Here you go!"
-					+ "\nBoundary word: " + reqBW
-					+ "\nBoundary length: " + reqBW.length
-					+ "\nArea: " + polyArea
-					+ "\n" + hashtags(polyArea, true);
+				var til;
+				if(tiles(reqBW))
+					til = "Yes!!";
+				else
+					til = "No"
+
+				if(isValidBoundary){
+
+					if(reqBW.length < 35){
+						replyText = "@" + sender + " Here you go!"
+						+ "\nBoundary: " + reqBW
+						//+ "\nBoundary length: " + boundWord.length
+						+ "\nArea: " + polyArea
+						+"\nTiles by trans: " + til
+						+ "\n" + hashtags(polyArea, true);
+					}
+					else{
+						replyText = "@" + sender + " Here you go!"
+						+ "\nBoundary: Ahh! Too long for me to repost!"
+						+ "\nArea: " + polyArea
+						+"\nTiles by trans: " + til
+						+ "\n" + hashtags(polyArea, true);
+					}
 				}
 
 				else if(reqBW.length < 4){
-					console.log(reqBW.length);
-					console.log("Didn't find boundWord");
-					return;
+					replyText = "@" + sender + " Sorry! I didn't see a boundary word in your tweet";
+				}
+				else if(isClosed && !isIntersecting && !isClockwise){
+					replyText = "@" + sender + " Typically, polyomino boundary words are read in clockwise orientation. Please try correcting and resending your request :)";
+				}
+				else if(isIntersecting && isClosed){
+					if(reqBW.length < 35){
+						replyText = "@" + sender + " Whoa! \"" + reqBW + "\" self intersects! Watch what you're doing! #notaPolyomino"
+					}
+					else {
+						replyText = "@" + sender + " Whoa! The requested boundary word self intersects! Watch what you're doing! #notaPolyomino"
+					}
 				}
 				else{
 					switch(Math.floor(Math.random()*5)){
@@ -103,28 +136,35 @@ stream.on('tweet', function(data){
 							break;
 
 						case 1:
-							replyText = "@" + sender + " Have you tried checking wikipedia for what a polyomino is? https://en.wikipedia.org/wiki/Polyomino";
+							replyText = "@" + sender + " Have you tried checking wikipedia for the definition of a polyomino? https://en.wikipedia.org/wiki/Polyomino";
 							break;
 
 						case 2:
-							replyText = "@" + sender + " What's that?"
+							replyText = "@" + sender + " Oops! something is wrong with your reqest.  Please try again."
 							break;
 
 						case 3:
-							replyText = "@" + sender + " Is this really what you're looking for?"
+							replyText = "@" + sender + " Hmm, something is wrong with the boundary word";
 							break;
 
 						case 4:
-							replyText = "@" + sender + " Either I don't know how to read or you are prone to making typos"
+							replyText = "@" + sender + " I must have misread or you mistyped! Try tweeting at me again!"
 							break;
 
-						replyText += "#notaPolyomino";
+
 					}
+					replyText += " \"" + reqBW  + "\" is #notaPolyomino";
 				}
 
-				var tweet = {
-					status: replyText,
-					media_ids: [id]
+
+				if(isValidBoundary){
+					var tweet = {
+						status: replyText,
+						media_ids: [id]
+					}
+				}
+				else{
+					var tweet = {status: replyText}
 				}
 				T.post('statuses/update', tweet, tweeted);
 			}
@@ -144,9 +184,6 @@ stream.on('tweet', function(data){
 			}
 		}
 	console.log("Replied to " + sender + "'s request of " + reqBW);
-
-	//var reply = "@" + sender + " replying to your message:" + tweetText;
-	//T.post('statuses/update', {status: reply});
 	}
 
 })
@@ -179,6 +216,12 @@ function postTweet()
 	var isClosed = polyominoData[5];
 	var lowestXcoord = polyominoData[1];
 	var lowestYcoord = polyominoData[3];
+	var til;
+
+	if(tiles(boundWord))
+		til = "Yes!!";
+	else
+		til = "No"
 
 	canvas = renderCanvas(boundWord, polyWidth, polyHeight, lowestXcoord, lowestYcoord);
 
@@ -193,10 +236,12 @@ function postTweet()
 
 
 		var tweet = {
-		status: "Fixed simple polyomino number: " + tweet_num
-		+ "\nBoundary word: " + boundWord
-		+ "\nBoundary length: " + boundWord.length
+		status: "Fixed simple polyomino no: " + tweet_num
+		//"Polyomino No.: " + tweet_num
+		+ "\nBoundary: " + boundWord
+		//+ "\nBoundary length: " + boundWord.length
 		+ "\nArea: " + polyArea
+		+"\nTiles by trans: " + til
 		+ "\n" + hashtags(polyArea, false),
 		media_ids: [id]
 		}
@@ -206,6 +251,7 @@ function postTweet()
 	function tweeted(err, data, response){
 		if(err){
 			console.log("Failed to post tweet")
+			console.log(err);
 		}
 		else
 			console.log('Tweeted polyomino ' + tweet_num);
