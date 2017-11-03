@@ -5,7 +5,8 @@ var Twit = require('twit');
 var keys = require('./keys_test');
 var T = new Twit(keys);
 var boundary_words = require('./boundary_words');
-var screenName = "isaacmruiz";
+//var screenName = "isaacmruiz";
+var screenName = "PolyominoBot";
 //var boundary_words = ["nesw", "nneessww", "nnneeessswww", "nnnneeeesssswwww","nnnnneeeeessssswwwww"]; //Test boundary words
 var unit = 50; //no pixels per unit length
 var tweet_num;
@@ -20,7 +21,7 @@ catch(err){
 }
 
 postTweet();
-//setInterval(postTweet, 1000 * 60 * 60);
+setInterval(postTweet, 1000 * 60 * 60);
 //setInterval(postTweet, 1000 * 10);
 var stream = T.stream('user');
 
