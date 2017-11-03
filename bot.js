@@ -5,13 +5,20 @@ var T = new Twit(keys);
 var boundary_words = require('./boundary_words');
 var screenName = "isaacmruiz";
 //var boundary_words = ["nesw", "nneessww", "nnneeessswww", "nnnneeeesssswwww","nnnnneeeeessssswwwww"]; //Test boundary words
-var unit = 50;
-var tweet_num = 133;
+var unit = 50; //no pixels per unit length
+var tweet_num;
 var minMarginSize = 25; //pixels
 var scaleFactor;
+var fs = require('fs');
+try{
+	tweet_num = fs.readFileSync("tweet_num.txt", "utf8");
+}
+catch(err){
+	tweet_num = 0;
+}
 
 postTweet();
-setInterval(postTweet, 1000 * 60 * 60);
+//setInterval(postTweet, 1000 * 60 * 60);
 //setInterval(postTweet, 1000 * 10);
 var stream = T.stream('user');
 
@@ -19,16 +26,38 @@ stream.on('tweet', function(data){
 
 	sender = data.user.screen_name;
 
-	//So that bot doesn't send reply on all tweet events where only @bot tweets trigger response
+	//So that bot doesn't send reply on all tweet events. Only @screenName (bot twitter handle)
+	//tweets trigger response
 	if(sender != screenName && data.in_reply_to_screen_name == screenName){
-		var fs = require('fs');
+
 		var textToFile = JSON.stringify(data, null, 2);
 		fs.writeFile("tweetdata.json", textToFile);
-
 
 		tweetText = data.text
 
 		var reqBW = getBoundaryFromTweet(tweetText.toLowerCase());
+
+		if(collision(reqBW)){
+			console.log("There is a collision");
+		}
+		else {
+			console.log("There was no collision");
+		}
+
+		if(clockwise(reqBW)){
+			console.log("The bw is clockwise");
+		}
+		else {
+			console.log("The bw is not clockwise");
+		}
+
+		if(tiles(reqBW)){
+			console.log("It tiles!");
+		}
+		else {
+			console.log("It does not tile");
+		}
+
 
 		var polyominoData = getPolyominoData(reqBW);
 		var polyWidth = polyominoData[0] - polyominoData[1];
@@ -41,27 +70,36 @@ stream.on('tweet', function(data){
 		console.log("poly width: " + polyWidth + " poly height: " + polyHeight);
 
 
-			canvas = renderCanvas(reqBW, polyWidth, polyHeight, lowestXcoord, lowestYcoord);
+		canvas = renderCanvas(reqBW, polyWidth, polyHeight, lowestXcoord, lowestYcoord);
 
-			T.post('media/upload', {
-				media_data: canvas.toBuffer().toString('base64') }, uploaded);
+		T.post('media/upload', {media_data: canvas.toBuffer().toString('base64')}, uploaded);
 
-			function uploaded(err, data, response){
-
+		function uploaded(err, data, response){
+			if(err){
+				console.log(err);
+				console.log("Failed to upload image")
+			}
+			else{
 				var id = data.media_id_string;
 				var replyText;
 				console.log("closed path? " + isClosed);
 				if(isClosed){
-					replyText = "@" + sender + " Here is the polyomino you requested!"
-					+ "\nBoundary word: " + boundWord
-					+ "\nBoundary length: " + boundWord.length
+					replyText = "@" + sender + " Here you go!"
+					+ "\nBoundary word: " + reqBW
+					+ "\nBoundary length: " + reqBW.length
 					+ "\nArea: " + polyArea
-					+ "\n" + hashtags(polyArea)
+					+ "\n" + hashtags(polyArea, true);
+				}
+
+				else if(reqBW.length < 4){
+					console.log(reqBW.length);
+					console.log("Didn't find boundWord");
+					return;
 				}
 				else{
 					switch(Math.floor(Math.random()*5)){
 						case 0:
-							replyText = "@" + sender + "Not a closed path!";
+							replyText = "Sorry @" + sender + ", \"" + reqBW + "\" is not a closed path!";
 							break;
 
 						case 1:
@@ -79,8 +117,9 @@ stream.on('tweet', function(data){
 						case 4:
 							replyText = "@" + sender + " Either I don't know how to read or you are prone to making typos"
 							break;
-					}
 
+						replyText += "#notaPolyomino";
+					}
 				}
 
 				var tweet = {
@@ -89,19 +128,26 @@ stream.on('tweet', function(data){
 				}
 				T.post('statuses/update', tweet, tweeted);
 			}
-
-			function tweeted(err, data, response){
-				console.log('Tweeted');
-			}
-
-
-
-
-		console.log("Replied to " + sender + "'s request of " + reqBW);
-
-		//var reply = "@" + sender + " replying to your message:" + tweetText;
-		//T.post('statuses/update', {status: reply});
 		}
+
+		function tweeted(err, data, response){
+			if(err){
+				console.log(err)
+				console.log("Error! Failed to reply to tweet")
+				var d = JSON.stringify(data, null, 2);
+				var r = JSON.stringify(response, null, 2);
+				fs.writeFile("err_data.json", d);
+				fs.writeFile("err_response.json", r);
+			}
+			else {
+				console.log("Replied to user " + sender + "'s request of boundary word " + reqBW);
+			}
+		}
+	console.log("Replied to " + sender + "'s request of " + reqBW);
+
+	//var reply = "@" + sender + " replying to your message:" + tweetText;
+	//T.post('statuses/update', {status: reply});
+	}
 
 })
 
@@ -139,23 +185,33 @@ function postTweet()
 	T.post('media/upload', { media_data: canvas.toBuffer().toString('base64') }, uploaded);
 
 	function uploaded(err, data, response){
+
+		if(err){
+			console.log("Failed to upload image");
+		}
 		var id = data.media_id_string;
+
 
 		var tweet = {
 		status: "Fixed simple polyomino number: " + tweet_num
 		+ "\nBoundary word: " + boundWord
 		+ "\nBoundary length: " + boundWord.length
 		+ "\nArea: " + polyArea
-		+ "\n" + hashtags(polyArea),
+		+ "\n" + hashtags(polyArea, false),
 		media_ids: [id]
 		}
 		T.post('statuses/update', tweet, tweeted);
 	}
 
 	function tweeted(err, data, response){
-		console.log('Tweeted');
+		if(err){
+			console.log("Failed to post tweet")
+		}
+		else
+			console.log('Tweeted polyomino ' + tweet_num);
 	}
 	tweet_num++;
+	fs.writeFile('tweet_num.txt', tweet_num);
 }
 
 function getPolyominoData(W){
@@ -305,9 +361,10 @@ function renderCanvas(bw, polyWidth, polyHeight, xMin, yMin){
 	return canvas;
 }
 
-function hashtags(polyArea)
+function hashtags(polyArea, userReq)
 {
 	var areaHashtag;
+	var htString;
 	switch(polyArea)
 	{
 		case 1:
@@ -353,5 +410,248 @@ function hashtags(polyArea)
 			areaHashtag = ("#" + polyArea + "omino");
 			break;
 	}
-	return (areaHashtag + " #geometry #polyomino");
+	if (userReq){
+		htString = areaHashtag + " #UserRequest";
+	}
+	else {
+		htString = areaHashtag + " #geometry #polyomino";
+	}
+	return htString;
+}
+
+function circularWord(bw)
+{
+	var up, down, left, right;
+	up = down = left = right = 0;
+	for (var i = 0; i < bw.length; i++)
+	{
+		switch (bw.charAt(i))
+		{
+			case 'n':
+				up++;
+				break;
+
+			case 's':
+				down++;
+				break;
+
+			case 'w':
+				left++;
+				break;
+			case 'e':
+				right++;
+				break;
+		}
+	}
+	if (left == right && up == down)
+		return true;
+
+	else
+		return false;
+}
+
+function getCoordinates(bw){
+
+	var arr = [];
+
+	//Initialize coordinate array
+	var x = 0;
+	var y = 0;
+
+	for (i = 0; i <bw.length; i++)
+	{
+		var c = {};
+		switch (bw.charAt(i))
+		{
+		case 'n':
+			y--;
+			break;
+
+		case 's':
+			y++;
+			break;
+
+		case 'w':
+			x--;
+			break;
+
+		case 'e':
+			x++;
+			break;
+		}
+		c.x = x;
+		c.y = y;
+
+		arr.push(c);
+	}
+	function compare(a,b) {
+		if (a.x < b.x)
+			return -1;
+
+		if (a.x > b.x)
+			return 1;
+
+		if (a.x == b.x){
+			if (a.y < b.y)
+				return -1;
+
+			if (a.y > b.y)
+				return 1;
+			return 0;
+		}
+	}
+	arr.sort(compare);
+	return arr;
+}
+
+function collision(bw)
+{
+	var arr = getCoordinates(bw);
+
+	for (var i = 0; i < bw.length - 1; i++)
+	{
+		if (arr[i].y == arr[i + 1].y && arr[i].x == arr[i + 1].x)
+				return true;
+	}
+	return false;
+}
+
+function clockwise(bw)
+{
+
+	var current;
+	var next;
+	var cw = 0;
+	var ccw = 0;
+
+	for (var i = 0; i < bw.length; i++)
+	{
+		current = bw.charAt(i);
+
+		if (i == bw.length - 1)
+			next = bw.charAt(0);
+
+		else
+			next = bw.charAt(i + 1);
+
+		switch (current)
+		{
+			case 'n':
+				if (next == 'e')
+					cw++;
+				if (next == 'w')
+					ccw++;
+				break;
+
+			case 's':
+				if (next == 'w')
+					cw++;
+				if (next == 'e')
+					ccw++;
+				break;
+
+			case 'w':
+				if (next == 'n')
+					cw++;
+				if (next == 's')
+					ccw++;
+				break;
+
+			case 'e':
+				if (next == 's')
+					cw++;
+				if (next == 'n')
+					ccw++;
+				break;
+		}
+	}
+
+	if (cw > ccw)
+		return true;
+
+	else
+		return false;
+}
+
+function reverseComplement(s)
+{
+	var rc = "";
+
+	for (var i = s.length - 1; i >= 0; i--)
+	{
+		switch (s.charAt(i))
+		{
+			case 'n':
+				rc += 's';
+				break;
+
+			case 's':
+				rc += 'n';
+				break;
+
+			case 'w':
+				rc += 'e';
+				break;
+
+			case 'e':
+				rc += 'w';
+				break;
+		}
+	}
+	return rc;
+}
+
+function tiles(bw){
+	if (!clockwise(bw) || collision(bw) || !circularWord(bw))
+		return false;
+	//for every possible six locations
+	//iterate over all possible choices of 6 position
+	var str = bw + bw;
+	var posA = 0;
+	var posB;
+	var posC;
+	//Length of factors
+	var lenA = 1;
+	var lenB = 1;
+	//Strings of factors
+	var A;
+	var B;
+	var C;
+    var i;
+	//Iterate over all possible positions of factorizations A B and C
+	for (posA = 0; posA < bw.length / 2; posA++)
+	{
+		for (lenA = 1; lenA < bw.length / 2; lenA++)
+		{
+			A = str.substring(posA, lenA + posA);
+            i = posA + bw.length / 2;
+
+			if (reverseComplement(A) == str.substring(posA + bw.length / 2, lenA + i ))
+			{
+
+				for (lenB = 1; lenA + lenB <= bw.length / 2; lenB++)
+				{
+					posB = posA + lenA;
+					B = str.substring(posB, lenB + posB);
+                    i = posB + bw.length / 2
+					if (reverseComplement(B) == str.substring(posB + bw.length / 2, lenB + i))
+					{
+						if (lenA + lenB == bw.length)
+							return true;
+						else {
+
+							posC = posB + lenB;
+							C = str.substring(posC, bw.length / 2 - (lenB + lenA) + posC);
+
+                            i = posC + bw.length / 2;
+							if (reverseComplement(C) == str.substring(posC + bw.length / 2, bw.length / 2 - (lenB + lenA) + i))
+								return true;
+
+						}
+					}
+				}
+			}
+		}
+	}
+	return false;
 }

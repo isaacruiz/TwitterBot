@@ -2,6 +2,9 @@
 keys.js
 keys_test.js
 node_modules
+test_code
 *.html
 test_string_parser.js
 tweetdata.json
+err_data.json
+err_response.json
