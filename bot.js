@@ -1,4 +1,5 @@
 
+(function(){
 console.log('The bot is starting');
 var Twit = require('twit');
 var keys = require('./keys_test');
@@ -153,10 +154,10 @@ stream.on('tweet', function(data){
 
 
 					}
-					replyText += " \"" + reqBW  + "\" is #notaPolyomino";
+					if(reqBW.lenght < 35){
+						replyText += " \"" + reqBW  + "\" is #notaPolyomino";
+					}
 				}
-
-
 				if(isValidBoundary){
 					var tweet = {
 						status: replyText,
@@ -701,3 +702,4 @@ function tiles(bw){
 	}
 	return false;
 }
+})();
