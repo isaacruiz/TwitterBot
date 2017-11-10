@@ -2,12 +2,12 @@
 (function(){
 console.log('The bot is starting');
 var Twit = require('twit');
-var keys = require('./keys_test');
-//var keys = require('./keys');
+//var keys = require('./keys_test');
+var keys = require('./keys');
 var T = new Twit(keys);
 var boundary_words = require('./boundary_words');
-var screenName = "isaacmruiz";
-//var screenName = "PolyominoBot";
+//var screenName = "isaacmruiz";
+var screenName = "PolyominoBot";
 
 var unit = 50; //no pixels per unit length
 var tweet_num;
