@@ -2,12 +2,12 @@
 (function(){
 console.log('The bot is starting');
 var Twit = require('twit');
-//var keys = require('./keys_test');
-var keys = require('./keys');
+var keys = require('./keys_test');
+//var keys = require('./keys');
 var T = new Twit(keys);
 var boundary_words = require('./boundary_words');
-//var screenName = "isaacmruiz";
-var screenName = "PolyominoBot";
+var screenName = "isaacmruiz";
+//var screenName = "PolyominoBot";
 
 var unit = 50; //no pixels per unit length
 var tweet_num;
@@ -56,6 +56,7 @@ stream.on('tweet', function(data){
 		var isIntersecting = collision(reqBW);
 		var isClosed = polyominoData[5];
 		var isValidBoundary = isClockwise && !isIntersecting && isClosed;
+		var tiling = tiles(reqBW);
 
 		if(isIntersecting){
 			console.log("There is a collision");
@@ -78,7 +79,7 @@ stream.on('tweet', function(data){
 			console.log("The bw is not closed");
 		}
 
-		if(tiles(reqBW)){
+		if(tiling){
 			console.log("It tiles!");
 		}
 		else {
@@ -98,14 +99,14 @@ stream.on('tweet', function(data){
 				var id = data.media_id_string;
 				var replyText;
 				var til;
-				if(tiles(reqBW))
+				if(tiling)
 					til = "Yes!!";
 				else
 					til = "No"
 
 				if(isValidBoundary){
 
-					if(reqBW.length < 35){
+					if(reqBW.length < 140){
 						replyText = "@" + sender + " Here you go!"
 						+ "\nBoundary: " + reqBW
 						+ "\nArea: " + polyArea
@@ -119,6 +120,9 @@ stream.on('tweet', function(data){
 						+"\nTiles by trans: " + til
 						+ "\n" + hashtags(polyArea, true);
 					}
+
+					if(tiling)
+						replyText += " #ItTiles"
 				}
 
 				else if(reqBW.length < 4){
@@ -128,7 +132,7 @@ stream.on('tweet', function(data){
 					replyText = "@" + sender + " I like polyomino boundary words that are read in clockwise orientation. Please try correcting and resending your request :)";
 				}
 				else if(isIntersecting && isClosed){
-					if(reqBW.length < 35){
+					if(reqBW.length < 140){
 						replyText = "@" + sender + " Whoa! \"" + reqBW + "\" self intersects! Watch what you're doing! #notaPolyomino"
 					}
 					else {
@@ -142,25 +146,22 @@ stream.on('tweet', function(data){
 							break;
 
 						case 1:
-							replyText = "@" + sender + " Have you tried checking wikipedia for the definition of a polyomino? https://en.wikipedia.org/wiki/Polyomino";
+							replyText = "@" + sender + " Have you tried checking wikipedia for the definition of a polyomino? The boundary word I saw was not valid! https://en.wikipedia.org/wiki/Polyomino";
 							break;
 
 						case 2:
-							replyText = "@" + sender + " Oops! something is wrong with your reqest.  Please try again."
+							replyText = "@" + sender + " Oops! something is wrong with your reqested polyomino.  Please try again."
 							break;
 
 						case 3:
-							replyText = "@" + sender + " Hmm, something is wrong with the boundary word";
+							replyText = "@" + sender + " Hmm, something is wrong with the boundary word. Please make sure it's a closed,  path!";
 							break;
 
 						case 4:
-							replyText = "@" + sender + " I must have misread or you mistyped! Try tweeting at me again!"
+							replyText = "@" + sender + " You might have mistyped the boundary! Try tweeting at me again!"
 							break;
 
 
-					}
-					if(reqBW.lenght < 35){
-						replyText += " \"" + reqBW  + "\" is #notaPolyomino";
 					}
 				}
 				if(isValidBoundary){
@@ -221,8 +222,8 @@ function postTweet()
 	var lowestXcoord = polyominoData[1];
 	var lowestYcoord = polyominoData[3];
 	var til;
-
-	if(tiles(boundWord))
+	var tiling = tiles(boundWord);
+	if(tiling)
 		til = "Yes!!";
 	else
 		til = "No"
@@ -238,17 +239,20 @@ function postTweet()
 		}
 		var id = data.media_id_string;
 
-
-		var tweet = {
-		status: "Fixed simple polyomino no: " + tweet_num
-		//"Polyomino No.: " + tweet_num
+		var statusText = "Fixed simple polyomino no: " + tweet_num
 		+ "\nBoundary: " + boundWord
-		//+ "\nBoundary length: " + boundWord.length
 		+ "\nArea: " + polyArea
 		+"\nTiles by trans: " + til
-		+ "\n" + hashtags(polyArea, false),
+		+ "\n" + hashtags(polyArea, false);
+
+		if(tiling)
+			statusText += " #ItTiles";
+
+		var tweet = {
+		status: statusText,
 		media_ids: [id]
 		}
+
 		T.post('statuses/update', tweet, tweeted);
 	}
 
@@ -461,7 +465,7 @@ function hashtags(polyArea, userReq)
 			break;
 	}
 	if (userReq){
-		htString = areaHashtag + " #UserRequest";
+		htString = areaHashtag + " #geometry #UserRequest";
 	}
 	else {
 		htString = areaHashtag + " #geometry #polyomino";
