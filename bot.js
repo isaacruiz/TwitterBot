@@ -2,12 +2,13 @@
 (function(){
 console.log('The bot is starting');
 var Twit = require('twit');
-var keys = require('./keys_test');
+//var keys = require('./keys_test');
+var keys = require('./keys');
 var T = new Twit(keys);
 var boundary_words = require('./boundary_words');
 //var screenName = "isaacmruiz";
 var screenName = "PolyominoBot";
-//var boundary_words = ["nesw", "nneessww", "nnneeessswww", "nnnneeeesssswwww","nnnnneeeeessssswwwww"]; //Test boundary words
+
 var unit = 50; //no pixels per unit length
 var tweet_num;
 var minMarginSize = 25; //pixels
@@ -36,10 +37,13 @@ stream.on('tweet', function(data){
 		var textToFile = JSON.stringify(data, null, 2);
 		fs.writeFile("tweetdata.json", textToFile);
 
-		tweetText = data.text
+		if(data.extended_tweet == null)
+			tweetText = data.text;
 
+		else {
+			tweetText = data.extended_tweet.full_text;
+		}
 		var reqBW = getBoundaryFromTweet(tweetText.toLowerCase());
-
 
 		var polyominoData = getPolyominoData(reqBW);
 		var polyWidth = polyominoData[0] - polyominoData[1];
@@ -52,6 +56,7 @@ stream.on('tweet', function(data){
 		var isIntersecting = collision(reqBW);
 		var isClosed = polyominoData[5];
 		var isValidBoundary = isClockwise && !isIntersecting && isClosed;
+
 		if(isIntersecting){
 			console.log("There is a collision");
 		}
@@ -103,7 +108,6 @@ stream.on('tweet', function(data){
 					if(reqBW.length < 35){
 						replyText = "@" + sender + " Here you go!"
 						+ "\nBoundary: " + reqBW
-						//+ "\nBoundary length: " + boundWord.length
 						+ "\nArea: " + polyArea
 						+"\nTiles by trans: " + til
 						+ "\n" + hashtags(polyArea, true);
@@ -134,7 +138,7 @@ stream.on('tweet', function(data){
 				else{
 					switch(Math.floor(Math.random()*5)){
 						case 0:
-							replyText = "Sorry @" + sender + ", \"" + reqBW + "\" is not a closed path!";
+							replyText = "Sorry @" + sender + ", the polyomino you requested is not a closed path!";
 							break;
 
 						case 1:
@@ -176,18 +180,16 @@ stream.on('tweet', function(data){
 			if(err){
 				console.log(err)
 				console.log("Error! Failed to reply to tweet")
-				var d = JSON.stringify(data, null, 2);
-				var r = JSON.stringify(response, null, 2);
-				fs.writeFile("err_data.json", d);
-				fs.writeFile("err_response.json", r);
+//				var d = JSON.stringify(data, null, 2);
+//				var r = JSON.stringify(response, null, 2);
+//				fs.writeFile("err_data.json", d);
+//				fs.writeFile("err_response.json", r);
 			}
 			else {
 				console.log("Replied to user " + sender + "'s request of boundary word " + reqBW);
 			}
 		}
-	console.log("Replied to " + sender + "'s request of " + reqBW);
 	}
-
 })
 
 function getBoundaryFromTweet(text){
