@@ -6,5 +6,6 @@ test_code
 *.html
 test_string_parser.js
 tweetdata.json
+tweet_num.txt
 err_data.json
 err_response.json
