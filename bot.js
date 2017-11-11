@@ -110,14 +110,14 @@ stream.on('tweet', function(data){
 						replyText = "@" + sender + " Here you go!"
 						+ "\nBoundary: " + reqBW
 						+ "\nArea: " + polyArea
-						+"\nTiles by trans: " + til
+						+"\nTiles by translation: " + til
 						+ "\n" + hashtags(polyArea, true);
 					}
 					else{
 						replyText = "@" + sender + " Here you go!"
 						+ "\nBoundary: Ahh! Too long for me to repost!"
 						+ "\nArea: " + polyArea
-						+"\nTiles by trans: " + til
+						+"\nTiles by translation: " + til
 						+ "\n" + hashtags(polyArea, true);
 					}
 
@@ -242,7 +242,7 @@ function postTweet()
 		var statusText = "Fixed simple polyomino no: " + tweet_num
 		+ "\nBoundary: " + boundWord
 		+ "\nArea: " + polyArea
-		+"\nTiles by trans: " + til
+		+"\nTiles by translation: " + til
 		+ "\n" + hashtags(polyArea, false);
 
 		if(tiling)
