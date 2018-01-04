@@ -2,12 +2,12 @@
 (function(){
 console.log('The bot is starting');
 var Twit = require('twit');
-//var keys = require('./keys_test');
-var keys = require('./keys');
+var keys = require('./keys_test');
+//var keys = require('./keys');
 var T = new Twit(keys);
 var boundary_words = require('./boundary_words');
-//var screenName = "isaacmruiz";
-var screenName = "PolyominoBot";
+var screenName = "isaacmruiz";
+//var screenName = "PolyominoBot";
 
 var unit = 50; //no pixels per unit length
 var tweet_num;
@@ -29,6 +29,7 @@ var stream = T.stream('user');
 stream.on('tweet', function(data){
 
 	sender = data.user.screen_name;
+	tweetId = data.id;
 
 	//So that bot doesn't send reply on all tweet events. Only @screenName (bot twitter handle)
 	//tweets trigger response
@@ -165,13 +166,20 @@ stream.on('tweet', function(data){
 					}
 				}
 				if(isValidBoundary){
+					console.log("reply to tweet id: " + tweetId);
 					var tweet = {
 						status: replyText,
-						media_ids: [id]
+						media_ids: [id],
+						in_reply_to_status_id: tweetId,
+						auto_populate_reply_metadata: true
 					}
 				}
 				else{
-					var tweet = {status: replyText}
+					var tweet = {
+						status: replyText,
+						in_reply_to_status_id: tweetId,
+						auto_populate_reply_metadata: true
+					}
 				}
 				T.post('statuses/update', tweet, tweeted);
 			}
@@ -181,10 +189,12 @@ stream.on('tweet', function(data){
 			if(err){
 				console.log(err)
 				console.log("Error! Failed to reply to tweet")
-//				var d = JSON.stringify(data, null, 2);
-//				var r = JSON.stringify(response, null, 2);
-//				fs.writeFile("err_data.json", d);
-//				fs.writeFile("err_response.json", r);
+				var e = JSON.stringify(err, null, 2);
+				var d = JSON.stringify(data, null, 2);
+				var r = JSON.stringify(response, null, 2);
+				fs.writeFile("err_data.json", d);
+				fs.writeFile("err_response.json", r);
+				fs.writeFile("err.json", e);
 			}
 			else {
 				console.log("Replied to user " + sender + "'s request of boundary word " + reqBW);
