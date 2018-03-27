@@ -21,8 +21,8 @@ catch(err){
 	tweet_num = 0;
 }
 
-postTweet();
-setInterval(postTweet, 1000 * 60 * 60);
+//postTweet();
+//setInterval(postTweet, 1000 * 60 * 60);
 //setInterval(postTweet, 1000 * 10);
 var stream = T.stream('user');
 
@@ -108,7 +108,7 @@ stream.on('tweet', function(data){
 				if(isValidBoundary){
 
 					if(reqBW.length < 140){
-						replyText = "@" + sender + " Here you go!"
+						replyText = ""//"@" + sender + " Here you go!"
 						+ "\nBoundary: " + reqBW
 						+ "\nArea: " + polyArea
 						+"\nTiles by translation: " + til
@@ -181,7 +181,11 @@ stream.on('tweet', function(data){
 						auto_populate_reply_metadata: true
 					}
 				}
-				T.post('statuses/update', tweet, tweeted);
+				function sendReply(){
+					T.post('statuses/update', tweet, tweeted)
+					console.log("Attempted to reply to sender " + sender + "'s tweet of " + tweetText);
+				}
+				setTimeout(sendReply, 10000);
 			}
 		}
 
