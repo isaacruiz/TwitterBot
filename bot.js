@@ -21,9 +21,9 @@ catch(err){
 	tweet_num = 0;
 }
 
-//postTweet();
+postTweet();
 //setInterval(postTweet, 1000 * 60 * 60);
-//setInterval(postTweet, 1000 * 10);
+setInterval(postTweet, 1000 * 15);
 var stream = T.stream('user');
 
 stream.on('tweet', function(data){
