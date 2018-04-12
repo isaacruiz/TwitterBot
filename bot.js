@@ -21,9 +21,9 @@ catch(err){
 	tweet_num = 0;
 }
 
-//postTweet();
+postTweet();
 //setInterval(postTweet, 1000 * 60 * 60);
-//setInterval(postTweet, 1000 * 15);
+setInterval(postTweet, 1000 * 30);
 var stream = T.stream('user');
 
 stream.on('tweet', function(data){
@@ -36,7 +36,9 @@ stream.on('tweet', function(data){
 	if(sender != screenName && data.in_reply_to_screen_name == screenName){
 
 		var textToFile = JSON.stringify(data, null, 2);
-		fs.writeFile("tweetdata.json", textToFile);
+		fs.writeFile("tweetdata.json", textToFile, (err) => {
+			if (err) throw err;
+		});
 
 		if(data.extended_tweet == null)
 			tweetText = data.text;
@@ -279,7 +281,9 @@ function postTweet()
 			console.log('Tweeted polyomino ' + tweet_num);
 	}
 	tweet_num++;
-	fs.writeFile('tweet_num.txt', tweet_num);
+	fs.writeFile('tweet_num.txt', tweet_num, (err) => {
+		if (err) throw err;
+	})
 }
 
 function getPolyominoData(W){
