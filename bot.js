@@ -23,7 +23,7 @@ catch(err){
 
 postTweet();
 //setInterval(postTweet, 1000 * 60 * 60);
-setInterval(postTweet, 1000 * 30);
+setInterval(postTweet, 1000 * 15);
 var stream = T.stream('user');
 
 stream.on('tweet', function(data){
@@ -172,15 +172,15 @@ stream.on('tweet', function(data){
 					var tweet = {
 						status: replyText,
 						media_ids: [id],
-				//		in_reply_to_status_id: tweetId,
-				//		auto_populate_reply_metadata: true
+					//	in_reply_to_status_id: tweetId,
+					//	auto_populate_reply_metadata: true
 					}
 				}
 				else{
 					var tweet = {
 						status: replyText,
-				//		in_reply_to_status_id: tweetId,
-				//		auto_populate_reply_metadata: true
+					//	in_reply_to_status_id: tweetId,
+					//	auto_populate_reply_metadata: true
 					}
 				}
 				function sendReply(){
