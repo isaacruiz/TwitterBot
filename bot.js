@@ -2,28 +2,28 @@
 (function(){
 console.log('The bot is starting');
 var Twit = require('twit');
-var keys = require('./keys_test');
-//var keys = require('./keys');
+//var keys = require('./keys_test');
+var keys = require('./keys');
 var T = new Twit(keys);
 var boundary_words = require('./boundary_words');
-var screenName = "isaacmruiz";
-//var screenName = "PolyominoBot";
+//var screenName = "isaacmruiz";
+var screenName = "PolyominoBot";
 
 var unit = 50; //no pixels per unit length
-var tweet_num;
+var tweet_num = 0;
 var minMarginSize = 25; //pixels
 var scaleFactor;
 var fs = require('fs');
 try{
-	tweet_num = fs.readFileSync("tweet_num.txt", "utf8");
+	tweet_num = parseInt(fs.readFileSync("tweet_num.txt", "utf8"));
 }
 catch(err){
 	tweet_num = 0;
 }
 
 postTweet();
-//setInterval(postTweet, 1000 * 60 * 60);
-setInterval(postTweet, 1000 * 15);
+setInterval(postTweet, 1000 * 60 * 60);
+//setInterval(postTweet, 1000 * 15);
 var stream = T.stream('user');
 
 stream.on('tweet', function(data){
