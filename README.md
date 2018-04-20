@@ -1,3 +1,4 @@
 # TwitterBot
 
-A bot to post tweets of generated polyominoes at a set interval
+A bot to post tweets of polyominoes!
+https://twitter.com/PolyominoBot
