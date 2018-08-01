@@ -129,7 +129,7 @@ stream.on('tweet', function(data){
 				}
 
 				else if(reqBW.length < 4){
-					replyText = "@" + sender + " Sorry! I didn't see a boundary word in your tweet";
+					replyText = "@" + sender + " I didn't see a boundary word in your tweet, but thanks for tweeting at me!!";
 				}
 				else if(isClosed && !isIntersecting && !isClockwise){
 					replyText = "@" + sender + " I like polyomino boundary words that are read in clockwise orientation. Please try correcting and resending your request :)";
